@@ -1,4 +1,5 @@
 import os
+import uuid
 from flask import Flask, request, jsonify, send_from_directory, render_template
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
@@ -8,14 +9,8 @@ from groq import Groq
 
 load_dotenv()
 
-app = Flask(__name__)
-
-api_key = os.getenv("GROQ_API_KEY")
-client = Groq(api_key=api_key) if api_key else None
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PDF_FOLDER = os.path.join(BASE_DIR, "data")
-
 ROOT_DIR = os.path.dirname(BASE_DIR)
 
 app = Flask(
@@ -23,20 +18,22 @@ app = Flask(
     template_folder=os.path.join(ROOT_DIR, "templates"),
     static_folder=os.path.join(ROOT_DIR, "static")
 )
+
+api_key = os.getenv("GROQ_API_KEY")
+client = Groq(api_key=api_key) if api_key else None
+
 documents = []
 vectorizer = None
 tfidf_matrix = None
 
+chat_histories = {}
+
 
 def chunk_text(text, chunk_size=1000, overlap=200):
-    chunks = []
-    start = 0
-
+    chunks, start = [], 0
     while start < len(text):
-        end = start + chunk_size
-        chunks.append(text[start:end])
+        chunks.append(text[start:start + chunk_size])
         start += chunk_size - overlap
-
     return chunks
 
 
@@ -48,7 +45,6 @@ def init_index():
         return False
 
     pdf_files = [f for f in os.listdir(PDF_FOLDER) if f.lower().endswith(".pdf")]
-
     if not pdf_files:
         print("Tidak ada file PDF.")
         return False
@@ -56,10 +52,8 @@ def init_index():
     for filename in pdf_files:
         pdf_path = os.path.join(PDF_FOLDER, filename)
         reader = PdfReader(pdf_path)
-
         for page_number, page in enumerate(reader.pages, start=1):
             text = page.extract_text()
-
             if text:
                 for chunk in chunk_text(text):
                     documents.append({
@@ -83,20 +77,12 @@ index_success = init_index()
 
 
 def search_docs(query, k=5):
-    if not index_success:
+    if not documents or vectorizer is None:
         return []
-
     query_vec = vectorizer.transform([query.lower()])
     scores = cosine_similarity(query_vec, tfidf_matrix).flatten()
     top_indices = scores.argsort()[-k:][::-1]
-
-    results = []
-
-    for i in top_indices:
-        if scores[i] > 0.01:
-            results.append(documents[i])
-
-    return results
+    return [documents[i] for i in top_indices if scores[i] > 0.01]
 
 
 @app.route("/")
@@ -106,77 +92,73 @@ def home():
 
 @app.route("/api/documents", methods=["GET"])
 def get_documents():
-    files = list(set([doc["source"] for doc in documents]))
+    files = sorted(set(doc["source"] for doc in documents))
+    return jsonify({"status": "success", "files": files})
 
-    return jsonify({
-        "status": "success",
-        "files": files
-    })
+
+@app.route("/api/data/<path:filename>")
+def serve_pdf(filename):
+    return send_from_directory(PDF_FOLDER, filename)
 
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
     if client is None:
-        return jsonify({
-            "answer": "GROQ_API_KEY belum diatur di file .env.",
-            "sources": []
-        })
+        return jsonify({"answer": "GROQ_API_KEY belum diatur di file .env.", "sources": []})
 
     data = request.get_json()
     user_message = data.get("message", "").strip()
+    session_id = data.get("session_id", "default")
 
     if not user_message:
-        return jsonify({
-            "answer": "Pertanyaan tidak boleh kosong.",
-            "sources": []
-        })
+        return jsonify({"answer": "Pertanyaan tidak boleh kosong.", "sources": []})
 
     docs = search_docs(user_message, k=6)
-
     if not docs:
-        return jsonify({
-            "answer": "Saya tidak menemukan jawabannya di dokumen akademik.",
-            "sources": []
-        })
+        return jsonify({"answer": "Saya tidak menemukan jawabannya di dokumen akademik.", "sources": []})
 
-    context = "\n\n".join([doc["content"] for doc in docs])
+    context = "\n\n".join(doc["content"] for doc in docs)
 
-    prompt = f"""
-Jawab pertanyaan hanya berdasarkan konteks dokumen berikut.
-Jika jawaban tidak ada dalam konteks, jawab:
-"Saya tidak menemukan jawabannya di dokumen."
+    if session_id not in chat_histories:
+        chat_histories[session_id] = []
+
+    history = chat_histories[session_id]
+
+    user_prompt = f"""Jawab pertanyaan hanya berdasarkan konteks dokumen berikut.
+Jika jawaban tidak ada dalam konteks, jawab: "Saya tidak menemukan jawabannya di dokumen."
 
 Konteks:
 {context}
 
 Pertanyaan:
-{user_message}
-"""
+{user_message}"""
+
+    messages_payload = [
+        {
+            "role": "system",
+            "content": "Kamu adalah asisten akademik SSC (Student Service Center). Jawab singkat, jelas, dan hanya berdasarkan dokumen yang diberikan."
+        }
+    ]
+    messages_payload.extend(history[-10:])
+    messages_payload.append({"role": "user", "content": user_prompt})
 
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Kamu adalah asisten akademik. Jawab singkat, jelas, dan hanya berdasarkan dokumen."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
+            messages=messages_payload,
             temperature=0.2
         )
 
         answer = response.choices[0].message.content
 
+        history.append({"role": "user", "content": user_message})
+        history.append({"role": "assistant", "content": answer})
+        chat_histories[session_id] = history
+
         sources = []
         seen = set()
-
         for doc in docs:
             key = (doc["source"], doc["page"])
-
             if key not in seen:
                 seen.add(key)
                 sources.append({
@@ -185,21 +167,29 @@ Pertanyaan:
                     "url": f"/api/data/{doc['source']}#page={doc['page']}"
                 })
 
-        return jsonify({
-            "answer": answer,
-            "sources": sources
-        })
+        return jsonify({"answer": answer, "sources": sources})
 
     except Exception as e:
-        return jsonify({
-            "answer": f"Terjadi error saat memanggil Groq: {str(e)}",
-            "sources": []
-        })
+        return jsonify({"answer": f"Terjadi error saat memanggil Groq: {str(e)}", "sources": []})
 
 
-@app.route("/api/data/<path:filename>")
-def serve_pdf(filename):
-    return send_from_directory(PDF_FOLDER, filename)
+@app.route("/api/history/<session_id>", methods=["GET"])
+def get_history(session_id):
+    history = chat_histories.get(session_id, [])
+    return jsonify({"session_id": session_id, "history": history})
+
+
+@app.route("/api/history/<session_id>", methods=["DELETE"])
+def clear_history(session_id):
+    if session_id in chat_histories:
+        del chat_histories[session_id]
+    return jsonify({"status": "success", "message": "History dihapus."})
+
+
+@app.route("/api/session/new", methods=["GET"])
+def new_session():
+    session_id = str(uuid.uuid4())
+    return jsonify({"session_id": session_id})
 
 
 if __name__ == "__main__":
