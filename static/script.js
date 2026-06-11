@@ -58,7 +58,7 @@ function createNewSession() {
     localStorage.setItem("ssc_session_id", sessionId);
 
     chatBox.innerHTML = "";
-    addMessage("Halo! Kamu bisa bertanya tentang EPrT, yudisium, SKS, sidang TA, dan syarat kelulusan.", "bot");
+    addMessage("Halo! Kamu bisa bertanya tentang EPrT, yudisium, SKS, sidang TA, syarat kelulusan, KP, dan TOSS.", "bot");
     renderSessionList();
 }
 
@@ -67,7 +67,7 @@ function loadSessionMessages(id) {
     chatBox.innerHTML = "";
 
     if (messages.length === 0) {
-        addMessage("Halo! Kamu bisa bertanya tentang EPrT, yudisium, SKS, sidang TA, dan syarat kelulusan.", "bot");
+        addMessage("Halo! Kamu bisa bertanya tentang EPrT, yudisium, SKS, sidang TA, syarat kelulusan, KP, dan TOSS.", "bot");
     } else {
         messages.forEach(msg => {
             addMessage(msg.content, msg.role === "user" ? "user" : "bot");
