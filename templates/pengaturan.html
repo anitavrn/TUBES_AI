@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan — SSC.AI Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --red: #ce1212;
+            --red-deep: #9a0c0c;
+            --red-glow: rgba(206, 18, 18, 0.35);
+            --red-subtle: rgba(206, 18, 18, 0.08);
+            --green: #10b981;
+            --green-subtle: rgba(16, 185, 129, 0.1);
+            --blue: #3b82f6;
+            --blue-subtle: rgba(59, 130, 246, 0.08);
+            --bg: #0d0d0f;
+            --bg-2: #111114;
+            --bg-3: #16161a;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.07);
+            --text: #f0f0f5;
+            --text-muted: #8a8a9a;
+            --text-dim: #555565;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .ambient {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(130px);
+            opacity: 0.12;
+            animation: blobDrift 22s ease-in-out infinite alternate;
+        }
+
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--red);
+            top: -15%;
+            left: -10%;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: #ff4444;
+            bottom: 5%;
+            right: -5%;
+            animation-delay: -8s;
+        }
+
+        @keyframes blobDrift {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(40px, -30px) scale(1.08);
+            }
+
+            100% {
+                transform: translate(-25px, 45px) scale(0.96);
+            }
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            background: rgba(13, 13, 15, 0.9);
+            border-right: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 28px;
+        }
+
+        .brand-badge {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--red), #ff5555);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            box-shadow: 0 0 18px var(--red-glow);
+        }
+
+        .brand-text h2 {
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .brand-text h2 span {
+            color: var(--red);
+        }
+
+        .brand-text p {
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding: 16px 12px 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--glass);
+            color: var(--text);
+            border-color: var(--glass-border);
+        }
+
+        .nav-item.active {
+            background: var(--red-subtle);
+            color: #ff9090;
+            border-color: rgba(206, 18, 18, 0.22);
+        }
+
+        .nav-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .admin-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+        }
+
+        .admin-av {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--red), #b00e0e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .admin-info h4 {
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+
+        .admin-info p {
+            font-size: 10.5px;
+            color: var(--text-dim);
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.25);
+            color: #ff7070;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit';
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(231, 76, 60, 0.2);
+        }
+
+        /* MAIN */
+        .main {
+            padding: 36px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .topbar-left h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+        }
+
+        .topbar-left p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .btn-secondary {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 9px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.2s;
+            cursor: pointer;
+            font-family: 'Outfit';
+        }
+
+        .btn-secondary:hover {
+            color: var(--text);
+            background: var(--glass-hover);
+        }
+
+        /* SETTINGS LAYOUT */
+        .settings-layout {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .settings-nav {
+            background: var(--bg-2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            position: sticky;
+            top: 80px;
+        }
+
+        .settings-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: 0.2s;
+            text-decoration: none;
+        }
+
+        .settings-nav-item:hover {
+            background: var(--glass);
+            color: var(--text);
+        }
+
+        .settings-nav-item.active {
+            background: var(--red-subtle);
+            color: #ff9090;
+            border-left-color: var(--red);
+        }
+
+        .settings-nav-item .s-icon {
+            font-size: 15px;
+            width: 18px;
+            text-align: center;
+        }
+
+        /* PANEL CARD */
+        .panel-card {
+            background: var(--bg-2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 20px 26px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .ph-icon {
+            width: 38px;
+            height: 38px;
+            background: var(--red-subtle);
+            border: 1px solid rgba(206, 18, 18, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .panel-header h2 {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .panel-header p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .panel-body {
+            padding: 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* FORM ELEMENTS */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-sublabel {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: -4px;
+        }
+
+        .form-input {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text);
+            font-family: 'Outfit';
+            font-size: 13.5px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            outline: none;
+            transition: 0.25s;
+            width: 100%;
+        }
+
+        .form-input:focus {
+            border-color: rgba(206, 18, 18, 0.4);
+            box-shadow: 0 0 0 3px rgba(206, 18, 18, 0.06);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        select.form-input option {
+            background: #1a1a1e;
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 90px;
+            line-height: 1.55;
+        }
+
+        /* TOGGLE SWITCH */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .toggle-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .toggle-info h4 {
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .toggle-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch-slider {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .switch input:checked+.switch-slider {
+            background: var(--red);
+            border-color: var(--red);
+        }
+
+        .switch-slider::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            left: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: 0.3s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .switch input:checked+.switch-slider::before {
+            left: calc(100% - 19px);
+        }
+
+        /* SLIDER */
+        .range-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: var(--glass-border);
+            border-radius: 100px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--red);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--red-glow);
+        }
+
+        .range-val {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--red);
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* SAVE ACTIONS */
+        .save-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding-top: 8px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--red), var(--red-deep));
+            color: white;
+            border: none;
+            padding: 11px 26px;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit';
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 0 16px rgba(206, 18, 18, 0.3);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 24px rgba(206, 18, 18, 0.5);
+        }
+
+        .btn-reset {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 11px 20px;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit';
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: var(--glass-hover);
+            color: var(--text);
+        }
+
+        /* DIVIDER */
+        .divider {
+            height: 1px;
+            background: var(--glass-border);
+            margin: 4px 0;
+        }
+
+        /* COLOR PICKER */
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .color-swatch {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+
+        .color-swatch.sel {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--bg-2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 14px 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13.5px;
+            font-weight: 600;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .toast.success {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        @media(max-width:900px) {
+            .page {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                padding: 20px;
+            }
+
+            .settings-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .settings-nav {
+                position: static;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+    <div class="page">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-badge">🎓</div>
+                <div class="brand-text">
+                    <h2>Tel-U <span>SSC.AI</span></h2>
+                    <p>Admin Console</p>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-label">Manajemen</div>
+                <a href="/admin" class="nav-item"><span class="nav-icon">📁</span>Dokumen PDF</a>
+                <a href="/admin/riwayat" class="nav-item"><span class="nav-icon">💬</span>Riwayat Chat</a>
+                <a href="/admin/statistik" class="nav-item"><span class="nav-icon">📊</span>Statistik</a>
+                <div class="nav-label">Sistem</div>
+                <a href="/admin/pengaturan" class="nav-item active"><span class="nav-icon">⚙️</span>Pengaturan</a>
+                <a href="/admin/keamanan" class="nav-item"><span class="nav-icon">🔑</span>Keamanan</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="admin-card">
+                    <div class="admin-av">👤</div>
+                    <div class="admin-info">
+                        <h4>Administrator</h4>
+                        <p>SSC Telkom University</p>
+                    </div>
+                </div>
+                <a href="/logout" class="btn-logout">Logout</a>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="topbar">
+                <div class="topbar-left">
+                    <h1>⚙️ Pengaturan</h1>
+                    <p>Konfigurasi sistem, model AI, dan tampilan SSC AI.</p>
+                </div>
+                <a href="/admin" class="btn-secondary">← Kembali</a>
+            </div>
+
+            <div class="settings-layout">
+                <!-- Settings Nav -->
+                <div class="settings-nav">
+                    <a class="settings-nav-item active" onclick="showSection('chatbot')"><span
+                            class="s-icon">🤖</span>Chatbot AI</a>
+                    <a class="settings-nav-item" onclick="showSection('tampilan')"><span
+                            class="s-icon">🎨</span>Tampilan</a>
+                    <a class="settings-nav-item" onclick="showSection('notifikasi')"><span
+                            class="s-icon">🔔</span>Notifikasi</a>
+                    <a class="settings-nav-item" onclick="showSection('api')"><span class="s-icon">🔌</span>API &
+                        Integrasi</a>
+                    <a class="settings-nav-item" onclick="showSection('backup')"><span class="s-icon">💾</span>Backup &
+                        Data</a>
+                </div>
+
+                <!-- Settings Content -->
+                <div id="settingsContent">
+
+                    <!-- CHATBOT SECTION -->
+                    <div class="section-block" id="sec-chatbot">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <div class="ph-icon">🤖</div>
+                                <div>
+                                    <h2>Konfigurasi Chatbot AI</h2>
+                                    <p>Atur perilaku dan respons AI assistant</p>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="form-label">Nama Asisten</label>
+                                    <p class="form-sublabel">Nama yang akan ditampilkan kepada mahasiswa</p>
+                                    <input type="text" class="form-input" value="SSC Assistant"
+                                        placeholder="Nama Asisten AI...">
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Model LLM</label>
+                                        <select class="form-input">
+                                            <option selected>GPT-4o</option>
+                                            <option>GPT-4o-mini</option>
+                                            <option>Gemini 1.5 Pro</option>
+                                            <option>Claude 3.5 Sonnet</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Bahasa Respons</label>
+                                        <select class="form-input">
+                                            <option selected>Bahasa Indonesia</option>
+                                            <option>English</option>
+                                            <option>Auto Detect</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Prompt Sistem</label>
+                                    <p class="form-sublabel">Instruksi dasar yang membentuk kepribadian AI</p>
+                                    <textarea
+                                        class="form-input">Anda adalah asisten AI Student Service Center Telkom University. Jawab pertanyaan mahasiswa berdasarkan dokumen resmi yang tersedia. Selalu berikan referensi dokumen dan nomor halaman. Gunakan Bahasa Indonesia yang sopan dan formal.</textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Maks. Token Respons</label>
+                                    <div class="range-wrap">
+                                        <input type="range" min="256" max="4096" value="1024" id="tokenRange"
+                                            oninput="document.getElementById('tokenVal').textContent=this.value">
+                                        <span class="range-val" id="tokenVal">1024</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Temperature (Kreativitas)</label>
+                                    <p class="form-sublabel">0 = Deterministik · 1 = Lebih kreatif</p>
+                                    <div class="range-wrap">
+                                        <input type="range" min="0" max="100" value="20" id="tempRange"
+                                            oninput="document.getElementById('tempVal').textContent=(this.value/100).toFixed(1)">
+                                        <span class="range-val" id="tempVal">0.2</span>
+                                    </div>
+                                </div>
+
+                                <div class="divider"></div>
+
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Tampilkan Sumber Dokumen</h4>
+                                        <p>Menampilkan referensi PDF dan nomor halaman setiap jawaban</p>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" checked><span
+                                            class="switch-slider"></span></label>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Quick Reply Chips</h4>
+                                        <p>Tampilkan tombol saran pertanyaan di awal percakapan</p>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" checked><span
+                                            class="switch-slider"></span></label>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Simpan Riwayat Chat</h4>
+                                        <p>Simpan semua percakapan ke database untuk analitik</p>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" checked><span
+                                            class="switch-slider"></span></label>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Mode Fallback</h4>
+                                        <p>Jika tidak ditemukan di dokumen, arahkan ke SSC langsung</p>
+                                    </div>
+                                    <label class="switch"><input type="checkbox"><span
+                                            class="switch-slider"></span></label>
+                                </div>
+
+                                <div class="save-bar">
+                                    <button class="btn-reset">Reset Default</button>
+                                    <button class="btn-save" onclick="showToast()">💾 Simpan Pengaturan</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAMPILAN SECTION (hidden) -->
+                    <div class="section-block" id="sec-tampilan" style="display:none;">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <div class="ph-icon">🎨</div>
+                                <div>
+                                    <h2>Tampilan & Branding</h2>
+                                    <p>Atur tema dan warna antarmuka</p>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="form-label">Nama Lembaga</label>
+                                    <input type="text" class="form-input"
+                                        value="Student Service Center Telkom University">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Warna Utama Brand</label>
+                                    <div class="color-row">
+                                        <div class="color-swatch sel" style="background:#ce1212;" title="#ce1212"></div>
+                                        <div class="color-swatch" style="background:#3b82f6;" title="#3b82f6"></div>
+                                        <div class="color-swatch" style="background:#10b981;" title="#10b981"></div>
+                                        <div class="color-swatch" style="background:#8b5cf6;" title="#8b5cf6"></div>
+                                        <div class="color-swatch" style="background:#f59e0b;" title="#f59e0b"></div>
+                                        <input type="color" class="form-input"
+                                            style="width:60px;height:34px;padding:2px 4px;cursor:pointer;"
+                                            value="#ce1212">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Font Antarmuka</label>
+                                        <select class="form-input">
+                                            <option selected>Outfit</option>
+                                            <option>Poppins</option>
+                                            <option>Inter</option>
+                                            <option>Roboto</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Posisi Chat Widget</label>
+                                        <select class="form-input">
+                                            <option selected>Kanan Bawah</option>
+                                            <option>Kiri Bawah</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Dark Mode Default</h4>
+                                        <p>Tampilkan halaman utama dalam mode gelap</p>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" checked><span
+                                            class="switch-slider"></span></label>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Animasi Scroll</h4>
+                                        <p>Aktifkan animasi reveal saat scrolling halaman</p>
+                                    </div>
+                                    <label class="switch"><input type="checkbox" checked><span
+                                            class="switch-slider"></span></label>
+                                </div>
+                                <div class="save-bar">
+                                    <button class="btn-reset">Reset Default</button>
+                                    <button class="btn-save" onclick="showToast()">💾 Simpan</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NOTIFIKASI SECTION (hidden) -->
+                    <div class="section-block" id="sec-notifikasi" style="display:none;">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <div class="ph-icon">🔔</div>
+                                <div>
+                                    <h2>Pengaturan Notifikasi</h2>
+                                    <p>Atur kapan dan bagaimana admin mendapat notifikasi</p>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="form-label">Email Notifikasi Admin</label>
+                                    <input type="email" class="form-input" placeholder="admin@telkomuniversity.ac.id">
+                                </div>
+                                <div class="divider"></div>
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Notif Dokumen Baru Diunggah</h4>
+                                        <p>Kirim email saat dokumen baru berhasil diindeks</p>
+                                    </div><label class="switch"><input type="checkbox" checked><span
+                                            class="switch-slider"></span></label>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Notif Pertanyaan Tidak Terjawab</h4>
+                                        <p>Alert saat AI tidak menemukan jawaban di knowledge-base</p>
+                                    </div><label class="switch"><input type="checkbox" checked><span
+                                            class="switch-slider"></span></label>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Laporan Mingguan Otomatis</h4>
+                                        <p>Kirim ringkasan statistik penggunaan setiap Senin</p>
+                                    </div><label class="switch"><input type="checkbox"><span
+                                            class="switch-slider"></span></label>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Alert Lonjakan Traffic</h4>
+                                        <p>Notifikasi saat sesi meningkat lebih dari 200% dalam 1 jam</p>
+                                    </div><label class="switch"><input type="checkbox"><span
+                                            class="switch-slider"></span></label>
+                                </div>
+                                <div class="save-bar">
+                                    <button class="btn-save" onclick="showToast()">💾 Simpan</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API SECTION (hidden) -->
+                    <div class="section-block" id="sec-api" style="display:none;">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <div class="ph-icon">🔌</div>
+                                <div>
+                                    <h2>API & Integrasi</h2>
+                                    <p>Kelola kunci API dan koneksi layanan eksternal</p>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="form-label">OpenAI API Key</label>
+                                    <p class="form-sublabel">Digunakan untuk model GPT-4o / GPT-4o-mini</p>
+                                    <input type="password" class="form-input"
+                                        placeholder="sk-proj-••••••••••••••••••••••••" value="sk-proj-xxxxxxxxxxxxxxxx">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Flask Backend URL</label>
+                                    <input type="text" class="form-input" value="http://127.0.0.1:5000"
+                                        placeholder="http://...">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Endpoint Chat API</label>
+                                    <input type="text" class="form-input" value="/api/chat">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Vector Database</label>
+                                        <select class="form-input">
+                                            <option selected>ChromaDB (Local)</option>
+                                            <option>Pinecone</option>
+                                            <option>Weaviate</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Embedding Model</label>
+                                        <select class="form-input">
+                                            <option selected>text-embedding-3-small</option>
+                                            <option>text-embedding-3-large</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Aktifkan Rate Limiting</h4>
+                                        <p>Batasi maksimal 30 request per menit per pengguna</p>
+                                    </div><label class="switch"><input type="checkbox" checked><span
+                                            class="switch-slider"></span></label>
+                                </div>
+                                <div class="save-bar">
+                                    <button class="btn-reset">Test Koneksi</button>
+                                    <button class="btn-save" onclick="showToast()">💾 Simpan</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BACKUP SECTION (hidden) -->
+                    <div class="section-block" id="sec-backup" style="display:none;">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <div class="ph-icon">💾</div>
+                                <div>
+                                    <h2>Backup & Manajemen Data</h2>
+                                    <p>Ekspor data dan atur kebijakan retensi</p>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:8px;">
+                                    <div
+                                        style="background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:20px;text-align:center;">
+                                        <div style="font-size:28px;margin-bottom:8px;">📦</div>
+                                        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">Backup Dokumen
+                                        </div>
+                                        <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;">28 file
+                                            PDF · 142 MB</div>
+                                        <button class="btn-secondary"
+                                            style="width:100%;justify-content:center;">Download ZIP</button>
+                                    </div>
+                                    <div
+                                        style="background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:20px;text-align:center;">
+                                        <div style="font-size:28px;margin-bottom:8px;">📊</div>
+                                        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">Export Riwayat
+                                            Chat</div>
+                                        <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;">247 sesi ·
+                                            3.8K pesan</div>
+                                        <button class="btn-secondary" style="width:100%;justify-content:center;">Export
+                                            JSON</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Retensi Data Riwayat Chat</label>
+                                    <select class="form-input">
+                                        <option>30 Hari</option>
+                                        <option selected>90 Hari</option>
+                                        <option>180 Hari</option>
+                                        <option>1 Tahun</option>
+                                        <option>Selamanya</option>
+                                    </select>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Auto Backup Mingguan</h4>
+                                        <p>Buat backup otomatis setiap Minggu dini hari</p>
+                                    </div><label class="switch"><input type="checkbox" checked><span
+                                            class="switch-slider"></span></label>
+                                </div>
+                                <div
+                                    style="background:rgba(231,76,60,0.06);border:1px solid rgba(231,76,60,0.2);border-radius:var(--radius-md);padding:18px;margin-top:8px;">
+                                    <div style="font-size:13px;font-weight:700;color:#ff9090;margin-bottom:6px;">⚠️ Zona
+                                        Berbahaya</div>
+                                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Tindakan
+                                        berikut tidak dapat dibatalkan. Harap berhati-hati.</p>
+                                    <button
+                                        style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);color:#ff7070;padding:9px 18px;border-radius:var(--radius-sm);font-family:'Outfit';font-size:13px;font-weight:600;cursor:pointer;"
+                                        onclick="if(confirm('Yakin hapus semua riwayat chat?')) alert('Dihapus')">Hapus
+                                        Semua Riwayat Chat</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast success" id="toast">
+        <span>✅</span>
+        <span>Pengaturan berhasil disimpan!</span>
+    </div>
+
+    <script>
+        function showSection(id) {
+            document.querySelectorAll('.section-block').forEach(s => s.style.display = 'none');
+            document.getElementById('sec-' + id).style.display = 'block';
+            document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+            event.target.closest('.settings-nav-item').classList.add('active');
+        }
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+        document.querySelectorAll('.color-swatch').forEach(s => {
+            s.addEventListener('click', function () {
+                document.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('sel'));
+                this.classList.add('sel');
+            });
+        });
+    </script>
+</body>
+
+</html>

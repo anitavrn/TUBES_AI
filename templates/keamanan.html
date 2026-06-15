@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keamanan — SSC.AI Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --red: #ce1212;
+            --red-deep: #9a0c0c;
+            --red-glow: rgba(206, 18, 18, 0.35);
+            --red-subtle: rgba(206, 18, 18, 0.08);
+            --green: #10b981;
+            --green-subtle: rgba(16, 185, 129, 0.1);
+            --green-glow: rgba(16, 185, 129, 0.3);
+            --yellow: #eab308;
+            --yellow-subtle: rgba(234, 179, 8, 0.08);
+            --bg: #0d0d0f;
+            --bg-2: #111114;
+            --bg-3: #16161a;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.07);
+            --text: #f0f0f5;
+            --text-muted: #8a8a9a;
+            --text-dim: #555565;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .ambient {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(130px);
+            opacity: 0.12;
+            animation: blobDrift 22s ease-in-out infinite alternate;
+        }
+
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--red);
+            top: -15%;
+            left: -10%;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: #ff4444;
+            bottom: 5%;
+            right: -5%;
+            animation-delay: -8s;
+        }
+
+        @keyframes blobDrift {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(40px, -30px) scale(1.08);
+            }
+
+            100% {
+                transform: translate(-25px, 45px) scale(0.96);
+            }
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            background: rgba(13, 13, 15, 0.9);
+            border-right: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 28px;
+        }
+
+        .brand-badge {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--red), #ff5555);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            box-shadow: 0 0 18px var(--red-glow);
+        }
+
+        .brand-text h2 {
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .brand-text h2 span {
+            color: var(--red);
+        }
+
+        .brand-text p {
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding: 16px 12px 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--glass);
+            color: var(--text);
+            border-color: var(--glass-border);
+        }
+
+        .nav-item.active {
+            background: var(--red-subtle);
+            color: #ff9090;
+            border-color: rgba(206, 18, 18, 0.22);
+        }
+
+        .nav-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .admin-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+        }
+
+        .admin-av {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--red), #b00e0e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .admin-info h4 {
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+
+        .admin-info p {
+            font-size: 10.5px;
+            color: var(--text-dim);
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.25);
+            color: #ff7070;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit';
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(231, 76, 60, 0.2);
+        }
+
+        /* MAIN */
+        .main {
+            padding: 36px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .topbar-left h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+        }
+
+        .topbar-left p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .btn-secondary {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 9px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.2s;
+            cursor: pointer;
+            font-family: 'Outfit';
+        }
+
+        .btn-secondary:hover {
+            color: var(--text);
+            background: var(--glass-hover);
+        }
+
+        /* SECURITY SCORE */
+        .score-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.02));
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: var(--radius-lg);
+            padding: 28px 32px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .score-ring {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+        }
+
+        .score-ring svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .score-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-num {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--green);
+        }
+
+        .score-max {
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+
+        .score-info h3 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--green);
+            margin-bottom: 6px;
+        }
+
+        .score-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .score-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .score-item.ok {
+            color: var(--green);
+        }
+
+        .score-item.warn {
+            color: var(--yellow);
+        }
+
+        .score-item.bad {
+            color: #f87171;
+        }
+
+        /* CONTENT GRID */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        /* PANEL CARD */
+        .panel-card {
+            background: var(--bg-2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ph-icon {
+            width: 38px;
+            height: 38px;
+            background: var(--red-subtle);
+            border: 1px solid rgba(206, 18, 18, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .panel-header h2 {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .panel-header p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .panel-body {
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* FORM */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .form-label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-sublabel {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: -4px;
+        }
+
+        .form-input {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text);
+            font-family: 'Outfit';
+            font-size: 13.5px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            outline: none;
+            transition: 0.25s;
+            width: 100%;
+        }
+
+        .form-input:focus {
+            border-color: rgba(206, 18, 18, 0.4);
+            box-shadow: 0 0 0 3px rgba(206, 18, 18, 0.06);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .input-icon-wrap {
+            position: relative;
+        }
+
+        .input-icon-wrap .form-input {
+            padding-right: 44px;
+        }
+
+        .input-eye {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+        }
+
+        .input-eye:hover {
+            color: var(--text-muted);
+        }
+
+        /* PASSWORD STRENGTH */
+        .strength-bar {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .strength-seg {
+            flex: 1;
+            height: 3px;
+            border-radius: 100px;
+            background: var(--glass-border);
+            transition: background 0.3s;
+        }
+
+        .strength-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        /* TOGGLE */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .toggle-row:last-of-type {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .toggle-info h4 {
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .toggle-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch-slider {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .switch input:checked+.switch-slider {
+            background: var(--red);
+            border-color: var(--red);
+        }
+
+        .switch-slider::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            left: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: 0.3s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .switch input:checked+.switch-slider::before {
+            left: calc(100% - 19px);
+        }
+
+        /* BUTTONS */
+        .btn-save {
+            background: linear-gradient(135deg, var(--red), var(--red-deep));
+            color: white;
+            border: none;
+            padding: 11px 26px;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit';
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 0 16px rgba(206, 18, 18, 0.3);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 24px rgba(206, 18, 18, 0.5);
+        }
+
+        .save-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding-top: 8px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        /* SESSION / LOG TABLE */
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .log-table th {
+            padding: 9px 14px;
+            text-align: left;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .log-table td {
+            padding: 12px 14px;
+            font-size: 12.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .log-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .log-table tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .dot-green {
+            background: var(--green);
+        }
+
+        .dot-red {
+            background: #f87171;
+        }
+
+        .dot-yellow {
+            background: var(--yellow);
+        }
+
+        .device-badge {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            font-size: 10.5px;
+            padding: 3px 8px;
+            border-radius: 5px;
+            color: var(--text-muted);
+        }
+
+        .btn-revoke {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            color: #ff7070;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: 'Outfit';
+            font-size: 11.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-revoke:hover {
+            background: rgba(231, 76, 60, 0.2);
+        }
+
+        /* 2FA Setup Visual */
+        .tfa-box {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .tfa-qr {
+            width: 110px;
+            height: 110px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 14px;
+            font-size: 60px;
+        }
+
+        .tfa-code {
+            font-family: monospace;
+            font-size: 18px;
+            letter-spacing: 4px;
+            color: var(--green);
+            background: var(--green-subtle);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--bg-2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: var(--radius-md);
+            padding: 14px 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13.5px;
+            font-weight: 600;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        @media(max-width:900px) {
+            .page {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                padding: 20px;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+    <div class="page">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-badge">🎓</div>
+                <div class="brand-text">
+                    <h2>Tel-U <span>SSC.AI</span></h2>
+                    <p>Admin Console</p>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-label">Manajemen</div>
+                <a href="/admin" class="nav-item"><span class="nav-icon">📁</span>Dokumen PDF</a>
+                <a href="/admin/riwayat" class="nav-item"><span class="nav-icon">💬</span>Riwayat Chat</a>
+                <a href="/admin/statistik" class="nav-item"><span class="nav-icon">📊</span>Statistik</a>
+                <div class="nav-label">Sistem</div>
+                <a href="/admin/pengaturan" class="nav-item"><span class="nav-icon">⚙️</span>Pengaturan</a>
+                <a href="/admin/keamanan" class="nav-item active"><span class="nav-icon">🔑</span>Keamanan</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="admin-card">
+                    <div class="admin-av">👤</div>
+                    <div class="admin-info">
+                        <h4>Administrator</h4>
+                        <p>SSC Telkom University</p>
+                    </div>
+                </div>
+                <a href="/logout" class="btn-logout">Logout</a>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="topbar">
+                <div class="topbar-left">
+                    <h1>🔑 Keamanan</h1>
+                    <p>Kelola password, autentikasi, dan sesi aktif admin.</p>
+                </div>
+                <a href="/admin" class="btn-secondary">← Kembali</a>
+            </div>
+
+            <!-- Security Score -->
+            <div class="score-card">
+                <div class="score-ring">
+                    <svg viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3" />
+                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#10b981" stroke-width="3"
+                            stroke-dasharray="75 25" stroke-linecap="round" />
+                    </svg>
+                    <div class="score-center"><span class="score-num">75</span><span class="score-max">/100</span></div>
+                </div>
+                <div class="score-info">
+                    <h3>Keamanan Baik</h3>
+                    <p>Sistem Anda cukup aman. Aktifkan 2FA untuk meningkatkan skor ke 95/100.</p>
+                    <div class="score-items">
+                        <span class="score-item ok">✓ Password kuat</span>
+                        <span class="score-item ok">✓ HTTPS aktif</span>
+                        <span class="score-item ok">✓ Rate limiting on</span>
+                        <span class="score-item warn">⚠ 2FA belum aktif</span>
+                        <span class="score-item warn">⚠ Session timeout panjang</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+
+                <!-- GANTI PASSWORD -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div class="ph-icon">🔐</div>
+                        <div>
+                            <h2>Ubah Password</h2>
+                            <p>Gunakan password yang kuat dan unik</p>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label class="form-label">Password Saat Ini</label>
+                            <div class="input-icon-wrap">
+                                <input type="password" class="form-input" id="currPass" placeholder="••••••••">
+                                <button class="input-eye" onclick="togglePass('currPass')">👁</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password Baru</label>
+                            <div class="input-icon-wrap">
+                                <input type="password" class="form-input" id="newPass" placeholder="Min. 12 karakter"
+                                    oninput="checkStrength(this.value)">
+                                <button class="input-eye" onclick="togglePass('newPass')">👁</button>
+                            </div>
+                            <div class="strength-bar">
+                                <div class="strength-seg" id="s1"></div>
+                                <div class="strength-seg" id="s2"></div>
+                                <div class="strength-seg" id="s3"></div>
+                                <div class="strength-seg" id="s4"></div>
+                            </div>
+                            <div class="strength-label" id="strengthLabel">Masukkan password baru</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Konfirmasi Password Baru</label>
+                            <div class="input-icon-wrap">
+                                <input type="password" class="form-input" id="confPass" placeholder="••••••••">
+                                <button class="input-eye" onclick="togglePass('confPass')">👁</button>
+                            </div>
+                        </div>
+                        <div class="save-bar">
+                            <button class="btn-save" onclick="showToast('Password berhasil diperbarui! 🔐')">Perbarui
+                                Password</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2FA -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div class="ph-icon">📱</div>
+                        <div>
+                            <h2>Autentikasi 2 Faktor</h2>
+                            <p>Tambah lapisan keamanan ekstra</p>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="tfa-box">
+                            <div class="tfa-qr">📲</div>
+                            <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:12px;">Scan QR code dengan
+                                Google Authenticator atau Authy</p>
+                            <div class="tfa-code">ABCD EFGH 1234</div>
+                            <p style="font-size:11px;color:var(--text-dim);">Atau masukkan kode ini secara manual di
+                                aplikasi Anda</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Kode Verifikasi OTP</label>
+                            <input type="text" class="form-input" placeholder="000000" maxlength="6"
+                                style="letter-spacing:8px;font-size:18px;font-weight:700;text-align:center;">
+                        </div>
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <h4>Aktifkan 2FA</h4>
+                                <p>Wajib masukkan OTP saat login</p>
+                            </div>
+                            <label class="switch"><input type="checkbox"><span class="switch-slider"></span></label>
+                        </div>
+                        <div class="save-bar">
+                            <button class="btn-save" onclick="showToast('2FA berhasil dikonfigurasi! 📱')">Aktifkan
+                                2FA</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SESSION SETTINGS -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div class="ph-icon">⏱️</div>
+                        <div>
+                            <h2>Pengaturan Sesi</h2>
+                            <p>Atur timeout dan kebijakan login</p>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label class="form-label">Session Timeout</label>
+                            <select class="form-input">
+                                <option>15 Menit</option>
+                                <option>30 Menit</option>
+                                <option selected>1 Jam</option>
+                                <option>4 Jam</option>
+                                <option>8 Jam</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Maks. Percobaan Login Gagal</label>
+                            <select class="form-input">
+                                <option>3x</option>
+                                <option selected>5x</option>
+                                <option>10x</option>
+                            </select>
+                        </div>
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <h4>Paksa Logout Sesi Lain</h4>
+                                <p>Saat login dari perangkat baru, logout sesi aktif lainnya</p>
+                            </div>
+                            <label class="switch"><input type="checkbox"><span class="switch-slider"></span></label>
+                        </div>
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <h4>Notifikasi Login</h4>
+                                <p>Kirim email saat ada login baru terdeteksi</p>
+                            </div>
+                            <label class="switch"><input type="checkbox" checked><span
+                                    class="switch-slider"></span></label>
+                        </div>
+                        <div class="save-bar">
+                            <button class="btn-save" onclick="showToast('Pengaturan sesi disimpan!')">Simpan</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IP WHITELIST -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div class="ph-icon">🛡️</div>
+                        <div>
+                            <h2>IP Whitelist Admin</h2>
+                            <p>Batasi akses panel hanya dari IP tertentu</p>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <h4>Aktifkan IP Whitelist</h4>
+                                <p>Blokir akses dari IP yang tidak terdaftar</p>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="ipToggle"
+                                    onchange="document.getElementById('ipList').style.opacity=this.checked?'1':'0.4'"><span
+                                    class="switch-slider"></span></label>
+                        </div>
+                        <div id="ipList" style="opacity:0.4;transition:0.3s;">
+                            <div class="form-group">
+                                <label class="form-label">IP Diizinkan</label>
+                                <textarea class="form-input" rows="4"
+                                    placeholder="Satu IP per baris:&#10;192.168.1.100&#10;103.94.189.xxx&#10;0.0.0.0/0 (semua)">192.168.1.100
+103.94.189.0/24</textarea>
+                            </div>
+                        </div>
+                        <div class="save-bar">
+                            <button class="btn-save" onclick="showToast('IP Whitelist diperbarui! 🛡️')">Simpan</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LOGIN LOG -->
+                <div class="panel-card full-width">
+                    <div class="panel-header">
+                        <div class="ph-icon">📋</div>
+                        <div>
+                            <h2>Log Aktivitas Login</h2>
+                            <p>Riwayat percobaan masuk ke panel admin</p>
+                        </div>
+                    </div>
+                    <div class="panel-body" style="padding:0;">
+                        <table class="log-table">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Waktu</th>
+                                    <th>IP Address</th>
+                                    <th>Perangkat</th>
+                                    <th>Lokasi</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="status-dot dot-green"></span>Berhasil</td>
+                                    <td>14 Jun 2026, 20:47</td>
+                                    <td style="font-family:monospace;font-size:12px;">192.168.1.100</td>
+                                    <td><span class="device-badge">💻 Chrome · Windows</span></td>
+                                    <td style="font-size:12px;color:var(--text-muted);">Bandung, ID</td>
+                                    <td><span style="font-size:12px;color:var(--text-dim);">Sesi ini</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="status-dot dot-green"></span>Berhasil</td>
+                                    <td>13 Jun 2026, 09:12</td>
+                                    <td style="font-family:monospace;font-size:12px;">192.168.1.100</td>
+                                    <td><span class="device-badge">💻 Firefox · Windows</span></td>
+                                    <td style="font-size:12px;color:var(--text-muted);">Bandung, ID</td>
+                                    <td><button class="btn-revoke">Revoke</button></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="status-dot dot-red"></span>Gagal</td>
+                                    <td>12 Jun 2026, 23:44</td>
+                                    <td style="font-family:monospace;font-size:12px;color:#f87171;">45.33.32.156</td>
+                                    <td><span class="device-badge">🖥 Unknown · Linux</span></td>
+                                    <td style="font-size:12px;color:#f87171;">Amsterdam, NL ⚠️</td>
+                                    <td><button class="btn-revoke">Block IP</button></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="status-dot dot-red"></span>Gagal</td>
+                                    <td>12 Jun 2026, 23:43</td>
+                                    <td style="font-family:monospace;font-size:12px;color:#f87171;">45.33.32.156</td>
+                                    <td><span class="device-badge">🖥 Unknown · Linux</span></td>
+                                    <td style="font-size:12px;color:#f87171;">Amsterdam, NL ⚠️</td>
+                                    <td><button class="btn-revoke">Block IP</button></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="status-dot dot-green"></span>Berhasil</td>
+                                    <td>11 Jun 2026, 14:30</td>
+                                    <td style="font-family:monospace;font-size:12px;">103.94.189.45</td>
+                                    <td><span class="device-badge">📱 Safari · iOS</span></td>
+                                    <td style="font-size:12px;color:var(--text-muted);">Bandung, ID</td>
+                                    <td><button class="btn-revoke">Revoke</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"><span>✅</span><span id="toastMsg">Berhasil!</span></div>
+
+    <script>
+        function togglePass(id) {
+            const inp = document.getElementById(id);
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+        }
+
+        function checkStrength(val) {
+            const segs = [document.getElementById('s1'), document.getElementById('s2'), document.getElementById('s3'), document.getElementById('s4')];
+            const lbl = document.getElementById('strengthLabel');
+            const colors = ['transparent', 'transparent', 'transparent', 'transparent'];
+            let score = 0;
+            if (val.length >= 8) score++;
+            if (val.length >= 12) score++;
+            if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+            const labels = ['', 'Lemah', 'Cukup', 'Kuat', 'Sangat Kuat'];
+            const cls = ['', '#f87171', '#eab308', 'var(--green)', 'var(--green)'];
+            segs.forEach((s, i) => s.style.background = i < score ? cls[score] : 'var(--glass-border)');
+            lbl.textContent = val.length ? labels[score] : 'Masukkan password baru';
+            lbl.style.color = val.length ? cls[score] : 'var(--text-dim)';
+        }
+
+        function showToast(msg) {
+            document.getElementById('toastMsg').textContent = msg || 'Berhasil disimpan!';
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+
+</html>

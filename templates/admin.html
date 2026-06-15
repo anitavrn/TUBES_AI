@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — SSC.AI Telkom University</title>
+    <meta name="description" content="Panel administrasi dokumen knowledge-base SSC AI Telkom University.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ============================================================
+           DESIGN TOKENS — matching main site
+           ============================================================ */
+        :root {
+            --red: #ce1212;
+            --red-deep: #9a0c0c;
+            --red-glow: rgba(206, 18, 18, 0.35);
+            --red-subtle: rgba(206, 18, 18, 0.08);
+            --green: #10b981;
+            --green-subtle: rgba(16, 185, 129, 0.1);
+            --green-glow: rgba(16, 185, 129, 0.3);
+            --bg: #0d0d0f;
+            --bg-2: #111114;
+            --bg-3: #16161a;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.07);
+            --text: #f0f0f5;
+            --text-muted: #8a8a9a;
+            --text-dim: #555565;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── AMBIENT BLOBS ── */
+        .ambient {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(130px);
+            opacity: 0.12;
+            animation: blobDrift 22s ease-in-out infinite alternate;
+        }
+
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--red);
+            top: -15%;
+            left: -10%;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: #ff4444;
+            bottom: 5%;
+            right: -5%;
+            animation-delay: -8s;
+        }
+
+        .blob-3 {
+            width: 300px;
+            height: 300px;
+            background: #10b981;
+            top: 50%;
+            left: 50%;
+            animation-delay: -15s;
+            opacity: 0.07;
+        }
+
+        @keyframes blobDrift {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(40px, -30px) scale(1.08);
+            }
+
+            100% {
+                transform: translate(-25px, 45px) scale(0.96);
+            }
+        }
+
+        /* ── LAYOUT ── */
+        .page {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* ============================================================
+           SIDEBAR
+           ============================================================ */
+        .sidebar {
+            background: rgba(13, 13, 15, 0.9);
+            border-right: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 28px;
+        }
+
+        .brand-badge {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--red), #ff5555);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            box-shadow: 0 0 18px var(--red-glow);
+        }
+
+        .brand-text {
+            line-height: 1.2;
+        }
+
+        .brand-text h2 {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .brand-text h2 span {
+            color: var(--red);
+        }
+
+        .brand-text p {
+            font-size: 10px;
+            color: var(--text-dim);
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding: 16px 12px 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: 0.2s;
+            border: 1px solid transparent;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: var(--glass);
+            color: var(--text);
+            border-color: var(--glass-border);
+        }
+
+        .nav-item.active {
+            background: var(--red-subtle);
+            color: #ff9090;
+            border-color: rgba(206, 18, 18, 0.22);
+        }
+
+        .nav-item .nav-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-item .nav-badge {
+            margin-left: auto;
+            background: var(--red-subtle);
+            border: 1px solid rgba(206, 18, 18, 0.25);
+            color: #ff7070;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 100px;
+        }
+
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .admin-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+        }
+
+        .admin-av {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--red), #b00e0e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .admin-info h4 {
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+
+        .admin-info p {
+            font-size: 10.5px;
+            color: var(--text-dim);
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.25);
+            color: #ff7070;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit';
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: rgba(231, 76, 60, 0.4);
+        }
+
+        /* ============================================================
+           MAIN CONTENT
+           ============================================================ */
+        .main {
+            padding: 36px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        /* Top Bar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar-left h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+        }
+
+        .topbar-left p {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 4px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-back {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 9px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .btn-back:hover {
+            color: var(--text);
+            background: var(--glass-hover);
+        }
+
+        /* ── STAT CARDS ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 22px 24px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at top left, rgba(206, 18, 18, 0.04), transparent 60%);
+        }
+
+        .stat-card:hover {
+            border-color: rgba(206, 18, 18, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.red {
+            background: var(--red-subtle);
+            border: 1px solid rgba(206, 18, 18, 0.2);
+        }
+
+        .stat-icon.green {
+            background: var(--green-subtle);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .stat-icon.blue {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .stat-num {
+            font-size: 1.9rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ── UPLOAD SECTION ── */
+        .panel-card {
+            background: var(--bg-2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-header-icon {
+            width: 38px;
+            height: 38px;
+            background: var(--red-subtle);
+            border: 1px solid rgba(206, 18, 18, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .panel-header h2 {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .panel-header p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .panel-body {
+            padding: 28px;
+        }
+
+        /* Drag Drop Zone */
+        .drop-zone {
+            border: 2px dashed var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 48px 24px;
+            text-align: center;
+            transition: 0.3s;
+            position: relative;
+            cursor: pointer;
+            background: var(--glass);
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: rgba(206, 18, 18, 0.5);
+            background: var(--red-subtle);
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .drop-icon {
+            font-size: 42px;
+            margin-bottom: 14px;
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+
+        @keyframes floatIcon {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .drop-zone h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .drop-zone p {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .drop-zone .file-types {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--red-subtle);
+            border: 1px solid rgba(206, 18, 18, 0.2);
+            color: #ff7070;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 100px;
+            letter-spacing: 0.5px;
+        }
+
+        /* File preview (before upload) */
+        .file-preview {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            background: rgba(16, 185, 129, 0.07);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-top: 16px;
+        }
+
+        .file-preview.show {
+            display: flex;
+        }
+
+        .file-preview .fp-icon {
+            font-size: 22px;
+        }
+
+        .file-preview .fp-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--green);
+        }
+
+        .file-preview .fp-size {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .upload-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .btn-upload {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--green), #059669);
+            color: white;
+            border: none;
+            padding: 12px 26px;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit';
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 0 20px var(--green-glow);
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--green-glow);
+        }
+
+        .btn-reset {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit';
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: var(--glass-hover);
+            color: var(--text);
+        }
+
+        /* Progress bar (upload feedback) */
+        .upload-progress {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .upload-progress.show {
+            display: block;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--glass-border);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), #34d399);
+            width: 0%;
+            border-radius: 100px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 8px var(--green-glow);
+        }
+
+        /* ── DOCUMENT LIST ── */
+        .doc-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .doc-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            transition: 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doc-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--red), transparent);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .doc-item:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            background: var(--glass-hover);
+        }
+
+        .doc-item:hover::before {
+            opacity: 1;
+        }
+
+        .doc-file-icon {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            background: rgba(255, 80, 80, 0.1);
+            border: 1px solid rgba(255, 80, 80, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .doc-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .doc-name {
+            font-size: 13.5px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .doc-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 3px;
+        }
+
+        .doc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--green);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 100px;
+            letter-spacing: 0.5px;
+        }
+
+        .doc-badge.indexed {
+            /* green — already indexed */
+        }
+
+        .doc-badge.pdf {
+            background: var(--red-subtle);
+            border-color: rgba(206, 18, 18, 0.2);
+            color: #ff7070;
+        }
+
+        .doc-date {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .doc-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-view {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-view:hover {
+            color: var(--text);
+            background: var(--glass-hover);
+        }
+
+        .btn-del {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(231, 76, 60, 0.08);
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            color: #ff7070;
+            text-decoration: none;
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-del:hover {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: rgba(231, 76, 60, 0.4);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+
+        .empty-state .empty-icon {
+            font-size: 48px;
+            margin-bottom: 14px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+        }
+
+        /* Search + Filter bar */
+        .list-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .search-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            padding: 0 14px;
+            transition: 0.25s;
+        }
+
+        .search-wrap:focus-within {
+            border-color: rgba(206, 18, 18, 0.35);
+        }
+
+        .search-wrap span {
+            font-size: 15px;
+            color: var(--text-dim);
+        }
+
+        .search-wrap input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: 'Outfit';
+            font-size: 13px;
+            padding: 10px 0;
+            flex: 1;
+            caret-color: var(--red);
+        }
+
+        .search-wrap input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .filter-badge {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 9px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 12.5px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* ── TOAST NOTIFICATION ── */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--bg-2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 14px 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13.5px;
+            font-weight: 600;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .toast.success {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .toast.success .toast-icon {
+            color: var(--green);
+        }
+
+        .toast.error {
+            border-color: rgba(231, 76, 60, 0.3);
+        }
+
+        .toast.error .toast-icon {
+            color: #ff6b6b;
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        /* Delete confirm modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 8000;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: var(--bg-2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 36px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-overlay.open .modal-box {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            font-size: 42px;
+            margin-bottom: 14px;
+        }
+
+        .modal-box h3 {
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .modal-box p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .modal-filename {
+            background: var(--red-subtle);
+            border: 1px solid rgba(206, 18, 18, 0.2);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            font-size: 12.5px;
+            color: #ff9090;
+            font-weight: 600;
+            margin: 14px 0;
+            word-break: break-all;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .modal-cancel {
+            flex: 1;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            font-family: 'Outfit';
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .modal-cancel:hover {
+            background: var(--glass-hover);
+            color: var(--text);
+        }
+
+        .modal-confirm {
+            flex: 1;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: none;
+            color: white;
+            font-family: 'Outfit';
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+        }
+
+        .modal-confirm:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(231, 76, 60, 0.5);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+            .page {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                padding: 24px 20px;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .doc-actions .btn-view {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Ambient Background -->
+    <div class="ambient">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="page">
+
+        <!-- ====== SIDEBAR ====== -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-badge">🎓</div>
+                <div class="brand-text">
+                    <h2>Tel-U <span>SSC.AI</span></h2>
+                    <p>Admin Console</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Manajemen</div>
+                <a href="/admin" class="nav-item active">
+                    <span class="nav-icon">📁</span>
+                    Dokumen PDF
+                    <span class="nav-badge" id="docCount">0</span>
+                </a>
+                <a href="/admin/riwayat" class="nav-item">
+                    <span class="nav-icon">💬</span>
+                    Riwayat Chat
+                </a>
+                <a href="/admin/statistik" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    Statistik
+                </a>
+
+                <div class="nav-section-label">Sistem</div>
+                <a href="/admin/pengaturan" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    Pengaturan
+                </a>
+                <a href="/admin/keamanan" class="nav-item">
+                    <span class="nav-icon">🔑</span>
+                    Keamanan
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-card">
+                    <div class="admin-av">👤</div>
+                    <div class="admin-info">
+                        <h4>Administrator</h4>
+                        <p>SSC Telkom University</p>
+                    </div>
+                </div>
+                <a href="/logout" class="btn-logout">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                        <path
+                            d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- ====== MAIN ====== -->
+        <main class="main">
+
+            <!-- Top Bar -->
+            <div class="topbar">
+                <div class="topbar-left">
+                    <h1>Kelola Dokumen</h1>
+                    <p>Upload dan kelola dokumen PDF knowledge-base chatbot SSC AI.</p>
+                </div>
+                <div class="topbar-actions">
+                    <a href="/" class="btn-back">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                        </svg>
+                        Kembali ke Situs
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon red">📁</div>
+                    <div>
+                        <div class="stat-num" id="statDocs">0</div>
+                        <div class="stat-label">Total Dokumen</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">✅</div>
+                    <div>
+                        <div class="stat-num" id="statIndexed">0</div>
+                        <div class="stat-label">Terindeks</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon blue">💬</div>
+                    <div>
+                        <div class="stat-num">15K+</div>
+                        <div class="stat-label">Total Pertanyaan</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Panel -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-header-info">
+                        <div class="panel-header-icon">📤</div>
+                        <div>
+                            <h2>Upload Dokumen Baru</h2>
+                            <p>Drag & drop atau klik untuk memilih file PDF</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <form action="/admin" method="POST" enctype="multipart/form-data" id="uploadForm">
+                        <div class="drop-zone" id="dropZone">
+                            <input type="file" name="file" accept=".pdf" required id="fileInput">
+                            <div class="drop-icon">📄</div>
+                            <h3>Seret file PDF ke sini</h3>
+                            <p>atau klik area ini untuk memilih file dari komputer Anda</p>
+                            <div class="file-types">PDF · Maks. 50MB</div>
+                        </div>
+
+                        <div class="file-preview" id="filePreview">
+                            <span class="fp-icon">📄</span>
+                            <div>
+                                <div class="fp-name" id="fpName">—</div>
+                                <div class="fp-size" id="fpSize">—</div>
+                            </div>
+                        </div>
+
+                        <div class="upload-progress" id="uploadProgress">
+                            <div class="progress-label">
+                                <span>Mengunggah...</span>
+                                <span id="progressPct">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                        </div>
+
+                        <div class="upload-actions">
+                            <button type="button" class="btn-reset" id="resetBtn">Reset</button>
+                            <button type="submit" class="btn-upload" id="uploadBtn">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="white">
+                                    <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z" />
+                                </svg>
+                                Unggah PDF
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Document List Panel -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-header-info">
+                        <div class="panel-header-icon">📋</div>
+                        <div>
+                            <h2>Daftar Dokumen</h2>
+                            <p>Kelola semua file PDF yang terindeks di knowledge-base</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="list-controls">
+                        <div class="search-wrap">
+                            <span>🔍</span>
+                            <input type="text" id="searchInput" placeholder="Cari dokumen...">
+                        </div>
+                        <div class="filter-badge">
+                            <span id="filterCount">0 file</span>
+                        </div>
+                    </div>
+
+                    <div class="doc-list" id="docList">
+                        {% for file in files %}
+                        <div class="doc-item" data-filename="{{ file }}">
+                            <div class="doc-file-icon">📄</div>
+                            <div class="doc-info">
+                                <div class="doc-name">{{ file }}</div>
+                                <div class="doc-meta">
+                                    <span class="doc-badge pdf">PDF</span>
+                                    <span class="doc-badge indexed">✓ Terindeks</span>
+                                    <span class="doc-date">Tersimpan di knowledge-base</span>
+                                </div>
+                            </div>
+                            <div class="doc-actions">
+                                <a href="#" class="btn-view">
+                                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                        <path
+                                            d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                                    </svg>
+                                    Lihat
+                                </a>
+                                <button class="btn-del" onclick="confirmDelete('{{ file }}')">
+                                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                        <path
+                                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                    </svg>
+                                    Hapus
+                                </button>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <h3>Belum ada dokumen</h3>
+                            <p>Upload file PDF pertama Anda untuk mulai membangun knowledge-base chatbot.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ====== DELETE MODAL ====== -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-box">
+            <div class="modal-icon">🗑️</div>
+            <h3>Hapus Dokumen?</h3>
+            <p>Tindakan ini tidak dapat dibatalkan. Dokumen akan dihapus dari knowledge-base dan chatbot tidak dapat
+                lagi mengaksesnya.</p>
+            <div class="modal-filename" id="modalFilename">—</div>
+            <div class="modal-actions">
+                <button class="modal-cancel" onclick="closeModal()">Batal</button>
+                <a href="#" class="modal-confirm" id="modalConfirmBtn">Ya, Hapus</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== TOAST ====== -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon">✅</span>
+        <span id="toastMsg">—</span>
+    </div>
+
+    <script>
+        /* ============================================================
+           STATS SYNC
+           ============================================================ */
+        function syncStats() {
+            const items = document.querySelectorAll('.doc-item[data-filename]');
+            const count = items.length;
+            document.getElementById('statDocs').textContent = count;
+            document.getElementById('statIndexed').textContent = count;
+            document.getElementById('docCount').textContent = count;
+            document.getElementById('filterCount').textContent = count + ' file';
+        }
+        syncStats();
+
+        /* ============================================================
+           FILE INPUT — DRAG & DROP ZONE
+           ============================================================ */
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const filePreview = document.getElementById('filePreview');
+        const fpName = document.getElementById('fpName');
+        const fpSize = document.getElementById('fpSize');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        function showFilePreview(file) {
+            fpName.textContent = file.name;
+            fpSize.textContent = formatBytes(file.size);
+            filePreview.classList.add('show');
+        }
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files[0]) showFilePreview(fileInput.files[0]);
+        });
+
+        // Drag & Drop
+        ['dragenter', 'dragover'].forEach(evt => {
+            dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+            dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+        });
+        dropZone.addEventListener('drop', e => {
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/pdf') {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+                showFilePreview(file);
+            } else {
+                showToast('error', '⚠️ Hanya file PDF yang diizinkan.');
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            filePreview.classList.remove('show');
+            document.getElementById('uploadProgress').classList.remove('show');
+        });
+
+        /* Upload progress simulation (for UX — real progress needs XHR) */
+        document.getElementById('uploadForm').addEventListener('submit', () => {
+            const progress = document.getElementById('uploadProgress');
+            const fill = document.getElementById('progressFill');
+            const pct = document.getElementById('progressPct');
+            progress.classList.add('show');
+            let val = 0;
+            const interval = setInterval(() => {
+                val = Math.min(val + Math.random() * 18, 90);
+                fill.style.width = val + '%';
+                pct.textContent = Math.round(val) + '%';
+                if (val >= 90) clearInterval(interval);
+            }, 200);
+        });
+
+        /* ============================================================
+           SEARCH / FILTER
+           ============================================================ */
+        document.getElementById('searchInput').addEventListener('input', function () {
+            const q = this.value.toLowerCase().trim();
+            const items = document.querySelectorAll('.doc-item[data-filename]');
+            let visible = 0;
+            items.forEach(item => {
+                const match = item.dataset.filename.toLowerCase().includes(q);
+                item.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            document.getElementById('filterCount').textContent = visible + ' file';
+        });
+
+        /* ============================================================
+           DELETE MODAL
+           ============================================================ */
+        function confirmDelete(filename) {
+            document.getElementById('modalFilename').textContent = filename;
+            document.getElementById('modalConfirmBtn').href = '/delete/' + encodeURIComponent(filename);
+            document.getElementById('deleteModal').classList.add('open');
+        }
+        function closeModal() {
+            document.getElementById('deleteModal').classList.remove('open');
+        }
+        document.getElementById('deleteModal').addEventListener('click', function (e) {
+            if (e.target === this) closeModal();
+        });
+
+        /* ============================================================
+           TOAST
+           ============================================================ */
+        function showToast(type, msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            document.getElementById('toastIcon').textContent = type === 'success' ? '✅' : '⚠️';
+            toast.className = 'toast show ' + type;
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        /* Show success toast if redirected after upload (query param) */
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('uploaded')) showToast('success', 'Dokumen berhasil diunggah & diindeks! ✅');
+        if (params.get('deleted')) showToast('success', 'Dokumen berhasil dihapus dari knowledge-base.');
+    </script>
+</body>
+
+</html>

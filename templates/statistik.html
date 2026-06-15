@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistik — SSC.AI Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --red: #ce1212;
+            --red-deep: #9a0c0c;
+            --red-glow: rgba(206, 18, 18, 0.35);
+            --red-subtle: rgba(206, 18, 18, 0.08);
+            --green: #10b981;
+            --green-subtle: rgba(16, 185, 129, 0.1);
+            --green-glow: rgba(16, 185, 129, 0.3);
+            --blue: #3b82f6;
+            --blue-subtle: rgba(59, 130, 246, 0.08);
+            --yellow: #eab308;
+            --yellow-subtle: rgba(234, 179, 8, 0.08);
+            --bg: #0d0d0f;
+            --bg-2: #111114;
+            --bg-3: #16161a;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.07);
+            --text: #f0f0f5;
+            --text-muted: #8a8a9a;
+            --text-dim: #555565;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .ambient {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(130px);
+            opacity: 0.12;
+            animation: blobDrift 22s ease-in-out infinite alternate;
+        }
+
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--red);
+            top: -15%;
+            left: -10%;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: #ff4444;
+            bottom: 5%;
+            right: -5%;
+            animation-delay: -8s;
+        }
+
+        .blob-3 {
+            width: 250px;
+            height: 250px;
+            background: var(--green);
+            top: 30%;
+            left: 60%;
+            animation-delay: -14s;
+            opacity: 0.07;
+        }
+
+        @keyframes blobDrift {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(40px, -30px) scale(1.08);
+            }
+
+            100% {
+                transform: translate(-25px, 45px) scale(0.96);
+            }
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR (shared) */
+        .sidebar {
+            background: rgba(13, 13, 15, 0.9);
+            border-right: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 28px;
+        }
+
+        .brand-badge {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--red), #ff5555);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            box-shadow: 0 0 18px var(--red-glow);
+        }
+
+        .brand-text h2 {
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .brand-text h2 span {
+            color: var(--red);
+        }
+
+        .brand-text p {
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding: 16px 12px 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--glass);
+            color: var(--text);
+            border-color: var(--glass-border);
+        }
+
+        .nav-item.active {
+            background: var(--red-subtle);
+            color: #ff9090;
+            border-color: rgba(206, 18, 18, 0.22);
+        }
+
+        .nav-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .admin-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+        }
+
+        .admin-av {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--red), #b00e0e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .admin-info h4 {
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+
+        .admin-info p {
+            font-size: 10.5px;
+            color: var(--text-dim);
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.25);
+            color: #ff7070;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit';
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(231, 76, 60, 0.2);
+        }
+
+        /* MAIN */
+        .main {
+            padding: 36px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .topbar-left h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+        }
+
+        .topbar-left p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 9px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.2s;
+            cursor: pointer;
+            font-family: 'Outfit';
+        }
+
+        .btn-secondary:hover {
+            color: var(--text);
+            background: var(--glass-hover);
+        }
+
+        /* TIME RANGE TABS */
+        .range-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 4px;
+            border-radius: var(--radius-sm);
+        }
+
+        .range-tab {
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-family: 'Outfit';
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .range-tab.active {
+            background: var(--bg-2);
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+        }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .stat-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 22px 20px;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(206, 18, 18, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .stat-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .s-red {
+            background: var(--red-subtle);
+            border: 1px solid rgba(206, 18, 18, 0.2);
+        }
+
+        .s-green {
+            background: var(--green-subtle);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .s-blue {
+            background: var(--blue-subtle);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .s-yellow {
+            background: var(--yellow-subtle);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+        }
+
+        .stat-trend {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 100px;
+        }
+
+        .trend-up {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--green);
+        }
+
+        .trend-down {
+            background: rgba(248, 113, 113, 0.12);
+            color: #f87171;
+        }
+
+        .stat-num {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* CHARTS GRID */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .panel-card {
+            background: var(--bg-2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .panel-header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ph-icon {
+            width: 38px;
+            height: 38px;
+            background: var(--red-subtle);
+            border: 1px solid rgba(206, 18, 18, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .panel-header h2 {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .panel-header p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .panel-body {
+            padding: 24px;
+        }
+
+        /* BAR CHART (CSS only) */
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 160px;
+            padding-top: 10px;
+        }
+
+        .bar-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            height: 100%;
+        }
+
+        .bar-col {
+            width: 100%;
+            border-radius: 6px 6px 0 0;
+            transition: opacity 0.2s;
+            cursor: default;
+            position: relative;
+        }
+
+        .bar-col:hover {
+            opacity: 0.85;
+        }
+
+        .bar-col::after {
+            content: attr(data-val);
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .bar-label {
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+
+        /* LINE CHART (SVG-based visual) */
+        .line-chart-wrap {
+            position: relative;
+            height: 160px;
+        }
+
+        .line-chart-wrap svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* DONUT / PIE (CSS) */
+        .donut-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 28px;
+        }
+
+        .donut {
+            position: relative;
+            width: 130px;
+            height: 130px;
+        }
+
+        .donut svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .donut-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .donut-num {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .donut-sub {
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .legend-val {
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: auto;
+            padding-left: 10px;
+        }
+
+        /* TOP QUESTIONS TABLE */
+        .q-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .q-table th {
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .q-table td {
+            padding: 12px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .q-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .q-table tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .rank-badge {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .r1 {
+            background: rgba(234, 179, 8, 0.15);
+            color: var(--yellow);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+
+        .r2 {
+            background: rgba(148, 163, 184, 0.12);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .r3 {
+            background: rgba(180, 100, 60, 0.12);
+            color: #cd7f50;
+            border: 1px solid rgba(180, 100, 60, 0.2);
+        }
+
+        .r-rest {
+            background: var(--glass);
+            color: var(--text-dim);
+            border: 1px solid var(--glass-border);
+        }
+
+        .freq-bar-bg {
+            height: 6px;
+            background: var(--glass-border);
+            border-radius: 100px;
+            overflow: hidden;
+            margin-top: 4px;
+            width: 100px;
+        }
+
+        .freq-bar-fill {
+            height: 100%;
+            border-radius: 100px;
+            background: linear-gradient(90deg, var(--red), #ff6b6b);
+        }
+
+        /* HEATMAP */
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .heatmap-day {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            transition: 0.2s;
+            cursor: default;
+        }
+
+        .heatmap-day:hover {
+            transform: scale(1.2);
+        }
+
+        .h0 {
+            background: var(--glass);
+        }
+
+        .h1 {
+            background: rgba(206, 18, 18, 0.2);
+        }
+
+        .h2 {
+            background: rgba(206, 18, 18, 0.4);
+        }
+
+        .h3 {
+            background: rgba(206, 18, 18, 0.65);
+        }
+
+        .h4 {
+            background: rgba(206, 18, 18, 0.85);
+        }
+
+        .heatmap-labels {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .heatmap-labels span {
+            font-size: 9px;
+            color: var(--text-dim);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        @media(max-width:900px) {
+            .page {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    <div class="page">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-badge">🎓</div>
+                <div class="brand-text">
+                    <h2>Tel-U <span>SSC.AI</span></h2>
+                    <p>Admin Console</p>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-label">Manajemen</div>
+                <a href="/admin" class="nav-item"><span class="nav-icon">📁</span>Dokumen PDF</a>
+                <a href="/admin/riwayat" class="nav-item"><span class="nav-icon">💬</span>Riwayat Chat</a>
+                <a href="/admin/statistik" class="nav-item active"><span class="nav-icon">📊</span>Statistik</a>
+                <div class="nav-label">Sistem</div>
+                <a href="/admin/pengaturan" class="nav-item"><span class="nav-icon">⚙️</span>Pengaturan</a>
+                <a href="/admin/keamanan" class="nav-item"><span class="nav-icon">🔑</span>Keamanan</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="admin-card">
+                    <div class="admin-av">👤</div>
+                    <div class="admin-info">
+                        <h4>Administrator</h4>
+                        <p>SSC Telkom University</p>
+                    </div>
+                </div>
+                <a href="/logout" class="btn-logout">Logout</a>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="topbar">
+                <div class="topbar-left">
+                    <h1>📊 Statistik</h1>
+                    <p>Analitik penggunaan SSC AI secara real-time.</p>
+                </div>
+                <div class="topbar-actions">
+                    <div class="range-tabs">
+                        <button class="range-tab" onclick="setRange(this)">7 Hari</button>
+                        <button class="range-tab active" onclick="setRange(this)">30 Hari</button>
+                        <button class="range-tab" onclick="setRange(this)">3 Bulan</button>
+                        <button class="range-tab" onclick="setRange(this)">1 Tahun</button>
+                    </div>
+                    <a href="/admin" class="btn-secondary">← Kembali</a>
+                </div>
+            </div>
+
+            <!-- KPI -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-top">
+                        <div class="stat-icon s-blue">💬</div>
+                        <span class="stat-trend trend-up">↑ 18%</span>
+                    </div>
+                    <div class="stat-num">3,847</div>
+                    <div class="stat-label">Total Sesi Bulan Ini</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-top">
+                        <div class="stat-icon s-green">✅</div>
+                        <span class="stat-trend trend-up">↑ 5%</span>
+                    </div>
+                    <div class="stat-num">94.2%</div>
+                    <div class="stat-label">Tingkat Keberhasilan</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-top">
+                        <div class="stat-icon s-yellow">⚡</div>
+                        <span class="stat-trend trend-up">↑ 12%</span>
+                    </div>
+                    <div class="stat-num">1.3s</div>
+                    <div class="stat-label">Rata-rata Respons</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-top">
+                        <div class="stat-icon s-red">📄</div>
+                        <span class="stat-trend trend-up">↑ 3</span>
+                    </div>
+                    <div class="stat-num">28</div>
+                    <div class="stat-label">Dokumen Aktif</div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="charts-grid">
+                <!-- Bar Chart -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div class="panel-header-info">
+                            <div class="ph-icon">📈</div>
+                            <div>
+                                <h2>Sesi per Hari</h2>
+                                <p>30 hari terakhir</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="bar-chart" id="barChart"></div>
+                        <div style="display:flex;justify-content:space-between;margin-top:8px;">
+                            <span style="font-size:10px;color:var(--text-dim);">1 Mei</span>
+                            <span style="font-size:10px;color:var(--text-dim);">14 Jun</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donut Chart -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div class="panel-header-info">
+                            <div class="ph-icon">🍩</div>
+                            <div>
+                                <h2>Topik Pertanyaan</h2>
+                                <p>Distribusi kategori</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="donut-wrap">
+                            <div class="donut">
+                                <svg viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.05)"
+                                        stroke-width="3.5" />
+                                    <!-- KRS 38% -->
+                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#ce1212" stroke-width="3.5"
+                                        stroke-dasharray="38 62" stroke-dashoffset="0" />
+                                    <!-- Wisuda 24% -->
+                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#10b981" stroke-width="3.5"
+                                        stroke-dasharray="24 76" stroke-dashoffset="-38" />
+                                    <!-- CeLOE 20% -->
+                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#3b82f6" stroke-width="3.5"
+                                        stroke-dasharray="20 80" stroke-dashoffset="-62" />
+                                    <!-- Beasiswa 12% -->
+                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#eab308" stroke-width="3.5"
+                                        stroke-dasharray="12 88" stroke-dashoffset="-82" />
+                                    <!-- Lain 6% -->
+                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#6b7280" stroke-width="3.5"
+                                        stroke-dasharray="6 94" stroke-dashoffset="-94" />
+                                </svg>
+                                <div class="donut-center">
+                                    <span class="donut-num">3.8K</span>
+                                    <span class="donut-sub">total</span>
+                                </div>
+                            </div>
+                            <div class="legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#ce1212;"></div><span
+                                        class="legend-label">KRS & Akademik</span><span class="legend-val">38%</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#10b981;"></div><span
+                                        class="legend-label">Wisuda</span><span class="legend-val">24%</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#3b82f6;"></div><span
+                                        class="legend-label">CeLOE</span><span class="legend-val">20%</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#eab308;"></div><span
+                                        class="legend-label">Beasiswa</span><span class="legend-val">12%</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#6b7280;"></div><span
+                                        class="legend-label">Lainnya</span><span class="legend-val">6%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="charts-grid">
+                <!-- Top Questions -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div class="panel-header-info">
+                            <div class="ph-icon">🏆</div>
+                            <div>
+                                <h2>Pertanyaan Terpopuler</h2>
+                                <p>Berdasarkan frekuensi</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body" style="padding:0;">
+                        <table class="q-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Pertanyaan</th>
+                                    <th>Frekuensi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="rank-badge r1">1</div>
+                                    </td>
+                                    <td>Cara mengisi KRS di iGracias?</td>
+                                    <td>
+                                        <div>312x</div>
+                                        <div class="freq-bar-bg">
+                                            <div class="freq-bar-fill" style="width:100%;"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="rank-badge r2">2</div>
+                                    </td>
+                                    <td>Syarat mendaftar wisuda?</td>
+                                    <td>
+                                        <div>287x</div>
+                                        <div class="freq-bar-bg">
+                                            <div class="freq-bar-fill"
+                                                style="width:92%;background:linear-gradient(90deg,#10b981,#34d399);">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="rank-badge r3">3</div>
+                                    </td>
+                                    <td>Bagaimana upload tugas CeLOE?</td>
+                                    <td>
+                                        <div>241x</div>
+                                        <div class="freq-bar-bg">
+                                            <div class="freq-bar-fill"
+                                                style="width:77%;background:linear-gradient(90deg,#3b82f6,#60a5fa);">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="rank-badge r-rest">4</div>
+                                    </td>
+                                    <td>Info beasiswa IPK 3.5 ke atas?</td>
+                                    <td>
+                                        <div>198x</div>
+                                        <div class="freq-bar-bg">
+                                            <div class="freq-bar-fill"
+                                                style="width:63%;background:linear-gradient(90deg,#eab308,#fde047);">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="rank-badge r-rest">5</div>
+                                    </td>
+                                    <td>Jadwal dan batas drop mata kuliah?</td>
+                                    <td>
+                                        <div>176x</div>
+                                        <div class="freq-bar-bg">
+                                            <div class="freq-bar-fill" style="width:56%;"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="rank-badge r-rest">6</div>
+                                    </td>
+                                    <td>Prosedur pengajuan cuti akademik?</td>
+                                    <td>
+                                        <div>154x</div>
+                                        <div class="freq-bar-bg">
+                                            <div class="freq-bar-fill" style="width:49%;"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Activity Heatmap -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div class="panel-header-info">
+                            <div class="ph-icon">🗓️</div>
+                            <div>
+                                <h2>Aktivitas Mingguan</h2>
+                                <p>Pola penggunaan per hari</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="heatmap-labels">
+                            <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+                        </div>
+                        <div class="heatmap" id="heatmap"></div>
+                        <div style="display:flex;align-items:center;gap:6px;margin-top:12px;">
+                            <span style="font-size:10px;color:var(--text-dim);">Lebih sedikit</span>
+                            <div style="width:12px;height:12px;border-radius:3px;" class="h0"></div>
+                            <div style="width:12px;height:12px;border-radius:3px;" class="h1"></div>
+                            <div style="width:12px;height:12px;border-radius:3px;" class="h2"></div>
+                            <div style="width:12px;height:12px;border-radius:3px;" class="h3"></div>
+                            <div style="width:12px;height:12px;border-radius:3px;" class="h4"></div>
+                            <span style="font-size:10px;color:var(--text-dim);">Lebih banyak</span>
+                        </div>
+
+                        <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px;">
+                            <div
+                                style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">
+                                Jam Tersibuk</div>
+                            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;" id="hourGrid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // BAR CHART
+        const barData = [12, 18, 9, 24, 31, 28, 15, 22, 35, 40, 29, 18, 23, 37, 42, 38, 20, 15, 30, 44, 50, 47, 35, 28, 40, 55, 48, 38, 42, 60];
+        const barChart = document.getElementById('barChart');
+        const max = Math.max(...barData);
+        barData.forEach((v, i) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'bar-wrap';
+            const bar = document.createElement('div');
+            bar.className = 'bar-col';
+            bar.style.cssText = `height:${(v / max) * 100}%;background:linear-gradient(180deg,#ce1212,#7f0a0a);`;
+            bar.setAttribute('data-val', v);
+            if (i % 5 === 0) {
+                const lbl = document.createElement('div');
+                lbl.className = 'bar-label';
+                wrap.appendChild(bar);
+                wrap.appendChild(lbl);
+            } else { wrap.appendChild(bar); }
+            barChart.appendChild(wrap);
+        });
+
+        // HEATMAP
+        const levels = [0, 1, 2, 3, 4];
+        const heatmap = document.getElementById('heatmap');
+        for (let i = 0; i < 35; i++) {
+            const d = document.createElement('div');
+            d.className = 'heatmap-day h' + levels[Math.floor(Math.random() * 5)];
+            d.title = Math.floor(Math.random() * 80) + ' sesi';
+            heatmap.appendChild(d);
+        }
+
+        // HOUR GRID
+        const hours = [
+            { h: '07-09', v: 12 }, { h: '09-11', v: 45 }, { h: '11-13', v: 38 }, { h: '13-15', v: 62 },
+            { h: '15-17', v: 55 }, { h: '17-19', v: 70 }, { h: '19-21', v: 85 }, { h: '21-23', v: 40 }
+        ];
+        const maxH = Math.max(...hours.map(h => h.v));
+        document.getElementById('hourGrid').innerHTML = hours.map(h => `
+            <div style="background:rgba(206,18,18,${(h.v / maxH) * 0.5 + 0.05});border:1px solid rgba(206,18,18,${(h.v / maxH) * 0.3 + 0.05});border-radius:6px;padding:7px;text-align:center;">
+                <div style="font-size:10px;color:var(--text-dim);">${h.h}</div>
+                <div style="font-size:12px;font-weight:700;color:#ff9090;">${h.v}</div>
+            </div>
+        `).join('');
+
+        function setRange(el) {
+            document.querySelectorAll('.range-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>
