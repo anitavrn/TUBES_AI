@@ -1,4 +1,6 @@
 import os
+import uuid
+import requests as req_lib
 from flask import Flask, request, jsonify, send_from_directory, render_template, redirect, url_for, session
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
@@ -6,6 +8,7 @@ from PyPDF2 import PdfReader
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from groq import Groq
+import bcrypt
 
 load_dotenv()
 
@@ -22,9 +25,96 @@ app = Flask(
 # Kunci rahasia untuk menjalankan fitur "session" (login)
 app.secret_key = "kunci_rahasia_tubes_ssc"
 
+# ── Groq client ───────────────────────────────────────────────
 api_key = os.getenv("GROQ_API_KEY")
 client = Groq(api_key=api_key) if api_key else None
 
+# ── Supabase config (pakai requests langsung, bukan supabase-py) ──
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_ENABLED = bool(SUPABASE_URL and SUPABASE_KEY)
+
+_SB_HEADERS = {
+    "apikey": SUPABASE_KEY or "",
+    "Authorization": f"Bearer {SUPABASE_KEY or ''}",
+    "Content-Type": "application/json",
+}
+
+
+# ── Supabase helper functions ─────────────────────────────────
+
+def sb_select(table, filters=None, order=None, limit=None, count=False):
+    """SELECT rows dari Supabase table."""
+    if not SUPABASE_ENABLED:
+        return [], 0
+    try:
+        headers = dict(_SB_HEADERS)
+        if count:
+            headers["Prefer"] = "count=exact"
+        params = {}
+        if filters:
+            params.update(filters)
+        if order:
+            params["order"] = order
+        if limit:
+            params["limit"] = limit
+        url = f"{SUPABASE_URL}/rest/v1/{table}"
+        r = req_lib.get(url, headers=headers, params=params, timeout=10)
+        if count:
+            total = int(r.headers.get("content-range", "0/0").split("/")[-1] or 0)
+            return r.json(), total
+        return r.json(), 0
+    except Exception as e:
+        print(f"[DB] sb_select error ({table}): {e}")
+        return [], 0
+
+
+def sb_insert(table, data):
+    """INSERT satu row ke Supabase table."""
+    if not SUPABASE_ENABLED:
+        return None
+    try:
+        headers = {**_SB_HEADERS, "Prefer": "return=representation"}
+        url = f"{SUPABASE_URL}/rest/v1/{table}"
+        r = req_lib.post(url, headers=headers, json=data, timeout=10)
+        return r.json()
+    except Exception as e:
+        print(f"[DB] sb_insert error ({table}): {e}")
+        return None
+
+
+def sb_upsert(table, data, on_conflict):
+    """UPSERT row ke Supabase table."""
+    if not SUPABASE_ENABLED:
+        return None
+    try:
+        headers = {
+            **_SB_HEADERS,
+            "Prefer": f"resolution=merge-duplicates,return=representation"
+        }
+        url = f"{SUPABASE_URL}/rest/v1/{table}?on_conflict={on_conflict}"
+        r = req_lib.post(url, headers=headers, json=data, timeout=10)
+        return r.json()
+    except Exception as e:
+        print(f"[DB] sb_upsert error ({table}): {e}")
+        return None
+
+
+def sb_update(table, data, eq_col, eq_val):
+    """UPDATE rows yang cocok dengan filter eq."""
+    if not SUPABASE_ENABLED:
+        return None
+    try:
+        headers = {**_SB_HEADERS, "Prefer": "return=representation"}
+        url = f"{SUPABASE_URL}/rest/v1/{table}?{eq_col}=eq.{eq_val}"
+        r = req_lib.patch(url, headers=headers, json=data, timeout=10)
+        return r.json()
+    except Exception as e:
+        print(f"[DB] sb_update error ({table}): {e}")
+        return None
+
+
+# ── RAG In-Memory State ───────────────────────────────────────
 documents = []
 vectorizer = None
 tfidf_matrix = None
@@ -85,7 +175,7 @@ def search_docs(query, k=5):
     return [documents[i] for i in top_indices if scores[i] > 0.01]
 
 
-# ── Helper: wajib login ──────────────────────────────────────────────────────
+# ── Helper: wajib login ───────────────────────────────────────
 def login_required():
     """Return redirect jika belum login, None jika sudah."""
     if not session.get("logged_in"):
@@ -110,21 +200,38 @@ def home():
 def login_page():
     error = None
     if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
 
-        if email == "admin@gmail.com" and password == "password":
-            session["logged_in"] = True
-            return redirect(url_for("admin_page"))
-        else:
+        if SUPABASE_ENABLED:
+            # ── Autentikasi via Supabase ──────────────────────
+            users, _ = sb_select("users", filters={"email": f"eq.{email}"})
+            if users:
+                user = users[0]
+                stored_hash = user.get("password_hash", "").encode()
+                try:
+                    if bcrypt.checkpw(password.encode(), stored_hash):
+                        session["logged_in"] = True
+                        session["user_email"] = email
+                        session["user_role"] = user.get("role", "admin")
+                        return redirect(url_for("admin_page"))
+                except Exception:
+                    pass
             error = "Email atau password salah!"
+        else:
+            # ── Fallback hardcoded jika Supabase tidak tersedia ──
+            if email == "admin@gmail.com" and password == "password":
+                session["logged_in"] = True
+                return redirect(url_for("admin_page"))
+            else:
+                error = "Email atau password salah!"
 
     return render_template("login.html", error=error)
 
 
 @app.route("/logout")
 def logout():
-    session.pop("logged_in", None)
+    session.clear()
     return redirect(url_for("home"))
 
 
@@ -145,6 +252,8 @@ def admin_page():
         if file.filename != "":
             filename = secure_filename(file.filename)
             file.save(os.path.join(PDF_FOLDER, filename))
+            # Catat ke Supabase
+            sb_upsert("documents", {"filename": filename, "is_active": True}, "filename")
             init_index()  # Re-index otomatis setelah upload
             return redirect(url_for("admin_page", uploaded=1))
 
@@ -161,8 +270,14 @@ def admin_riwayat():
     if guard:
         return guard
 
-    # Ambil semua sesi dari log (placeholder — bisa disambungkan ke DB)
-    return render_template("riwayat.html")
+    riwayat, _ = sb_select(
+        "chat_history",
+        order="created_at.desc",
+        limit=100
+    )
+    total_chat = len(riwayat)
+
+    return render_template("riwayat.html", riwayat=riwayat, total_chat=total_chat)
 
 
 @app.route("/admin/statistik")
@@ -171,10 +286,15 @@ def admin_statistik():
     if guard:
         return guard
 
-    # Statistik dokumen aktif bisa dikirim ke template
     total_docs = len(set(doc["source"] for doc in documents))
     total_chunks = len(documents)
-    return render_template("statistik.html", total_docs=total_docs, total_chunks=total_chunks)
+
+    _, total_chat = sb_select("chat_history", count=True)
+
+    return render_template("statistik.html",
+                           total_docs=total_docs,
+                           total_chunks=total_chunks,
+                           total_chat=total_chat)
 
 
 @app.route("/admin/pengaturan")
@@ -202,9 +322,12 @@ def delete_file(filename):
     if guard:
         return guard
 
-    file_path = os.path.join(PDF_FOLDER, secure_filename(filename))
+    safe_name = secure_filename(filename)
+    file_path = os.path.join(PDF_FOLDER, safe_name)
     if os.path.exists(file_path):
         os.remove(file_path)
+        # Update status di Supabase
+        sb_update("documents", {"is_active": False}, "filename", safe_name)
         init_index()  # Re-index otomatis setelah hapus
     return redirect(url_for("admin_page", deleted=1))
 
@@ -275,7 +398,22 @@ def chat_api():
                     "page": doc["page"],
                     "url": f"/api/data/{doc['source']}#page={doc['page']}"
                 })
+
+        # ── Simpan riwayat ke Supabase ─────────────────────────
+        session_id = session.get("chat_session_id")
+        if not session_id:
+            session_id = str(uuid.uuid4())
+            session["chat_session_id"] = session_id
+
+        sb_insert("chat_history", {
+            "session_id": session_id,
+            "user_message": user_message,
+            "bot_answer": answer,
+            "sources": sources
+        })
+
         return jsonify({"answer": answer, "sources": sources})
+
     except Exception as e:
         return jsonify({"answer": f"Error Groq: {str(e)}", "sources": []})
 

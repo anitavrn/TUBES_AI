@@ -1,4 +1,30 @@
+# Environment variables (JANGAN di-push ke GitHub!)
 .env
+
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
 *.pyc
-venv
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build / dist
+dist/
+build/
+*.egg-info/
+
+# Logs
+*.log
