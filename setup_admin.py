@@ -8,9 +8,9 @@ Usage:
 
 import os
 import sys
-import bcrypt
+import requests
+from werkzeug.security import generate_password_hash
 from dotenv import load_dotenv
-from supabase import create_client
 
 # Set encoding ke utf-8 agar aman di Windows
 if sys.stdout.encoding != 'utf-8':
@@ -25,26 +25,36 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     print("[ERROR] SUPABASE_URL atau SUPABASE_KEY tidak ditemukan di .env")
     exit(1)
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json",
+    "Prefer": "resolution=merge-duplicates,return=representation"
+}
 
 # ── Konfigurasi admin ─────────────────────────────────────────
 ADMIN_EMAIL    = "admin@gmail.com"
 ADMIN_PASSWORD = "admin123"   # Ganti sesuai keinginan
 # ─────────────────────────────────────────────────────────────
 
-password_hash = bcrypt.hashpw(ADMIN_PASSWORD.encode(), bcrypt.gensalt()).decode()
+# Generate hash dengan werkzeug (pbkdf2:sha256) - kompatibel tanpa bcrypt
+password_hash = generate_password_hash(ADMIN_PASSWORD)
 
 try:
-    result = supabase.table("users").upsert({
+    url = f"{SUPABASE_URL}/rest/v1/users?on_conflict=email"
+    r = requests.post(url, headers=HEADERS, json={
         "email": ADMIN_EMAIL,
         "password_hash": password_hash,
         "role": "admin"
-    }, on_conflict="email").execute()
+    }, timeout=10)
 
-    print("[OK] Admin berhasil dibuat!")
-    print(f"   Email    : {ADMIN_EMAIL}")
-    print(f"   Password : {ADMIN_PASSWORD}")
-    print("\n[PENTING] Simpan password ini dan hapus file setup_admin.py setelah selesai!")
+    if r.status_code in (200, 201):
+        print("[OK] Admin berhasil dibuat/diupdate!")
+        print(f"   Email    : {ADMIN_EMAIL}")
+        print(f"   Password : {ADMIN_PASSWORD}")
+        print("\n[PENTING] Simpan password ini dan hapus file setup_admin.py setelah selesai!")
+    else:
+        print(f"[GAGAL] Status {r.status_code}: {r.text}")
 
 except Exception as e:
-    print(f"[GAGAL] Gagal membuat admin: {e}")
+    print(f"[GAGAL] Error: {e}")

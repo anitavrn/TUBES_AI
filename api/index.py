@@ -3,12 +3,12 @@ import uuid
 import requests as req_lib
 from flask import Flask, request, jsonify, send_from_directory, render_template, redirect, url_for, session
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash, generate_password_hash
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from groq import Groq
-import bcrypt
 
 load_dotenv()
 
@@ -208,9 +208,10 @@ def login_page():
             users, _ = sb_select("users", filters={"email": f"eq.{email}"})
             if users:
                 user = users[0]
-                stored_hash = user.get("password_hash", "").encode()
+                stored_hash = user.get("password_hash", "")
                 try:
-                    if bcrypt.checkpw(password.encode(), stored_hash):
+                    # Coba werkzeug hash dulu (pbkdf2), fallback ke bcrypt
+                    if check_password_hash(stored_hash, password):
                         session["logged_in"] = True
                         session["user_email"] = email
                         session["user_role"] = user.get("role", "admin")

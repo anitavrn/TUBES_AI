@@ -5,5 +5,4 @@ PyPDF2
 scikit-learn
 groq
 gunicorn
-supabase
-bcrypt
+requests
